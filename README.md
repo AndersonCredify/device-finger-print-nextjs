@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Device Fingerprint para Next.js
 
-## Getting Started
+## Introdução
 
-First, run the development server:
+Este repositório contém um exemplo de implementação para capturar a impressão digital do dispositivo (Device Fingerprint) utilizando Next.js. O código faz uso da biblioteca FingerprintJS e envia os dados coletados para a plataforma da Credify. 
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Requisitos
+
+1. **Access Key**: Para usar este serviço, você precisará de uma access key fornecida pela equipe da Credify. Entre em contato com a equipe da Credify para obter sua access key.
+
+## Instruções
+
+### Passo 1: Obtenha sua Access Key
+
+Entre em contato com a equipe da Credify para solicitar sua access key. Esta key é necessária para autenticar suas requisições ao serviço da Credify.
+
+### Passo 2: Adicione o Código à Sua Aplicação Next.js
+
+Adicione o código abaixo à sua aplicação Next.js para capturar a impressão digital do dispositivo e enviar os dados para a plataforma da Credify.
+
+```javascript
+"use client"
+
+import { useEffect } from "react";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
+import axios from "axios";
+
+export default function Home() {
+  useEffect(() => {
+    // Inicializar o FingerprintJS no carregamento do componente
+    const getFingerprint = async () => {
+      try {
+        // Carregar o agente
+        const fp = await FingerprintJS.load();
+
+        // Obter o identificador do visitante
+        const result = await fp.get();
+
+        // Este é o identificador do visitante:
+        const visitorId = result.visitorId;
+        const accesskey = "your-access-key"; // Peça seu accesskey para equipe Credify
+        const bodyParams = {
+          visitorId,
+          accesskey,
+          document: "document-to-identify-the-client",
+          tipoDocument: "type-of-document", // CPF: "1", CNPJ: "2", CNH: "3", RG: "4",
+        };
+
+        // Enviar os dados para a Credify
+        await axios.post("https://back.credify.com.br/device-finger-print", bodyParams)
+          .then((res) => {
+            console.log(res.data);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } catch (error) {
+        console.error('Erro ao carregar FingerprintJS:', error);
+      }
+    };
+
+    getFingerprint();
+  }, []);
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <h1>Device Finger Print Next.js</h1>
+    </main>
+  );
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Parâmetros do Código
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **accesskey**: Substitua `"your-access-key"` pela access key fornecida pela equipe da Credify.
+- **document**: Informe o documento do usuário que está acessando a plataforma.
+- **tipoDocument**: Informe o tipo de documento utilizando os seguintes códigos:
+  - CPF: `"1"`
+  - CNPJ: `"2"`
+  - CNH: `"3"`
+  - RG: `"4"`
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Explicação do Código
 
-## Learn More
+1. **Carregamento do FingerprintJS**: O código importa a biblioteca FingerprintJS e a inicializa dentro do hook `useEffect` do React, que é executado quando o componente é montado.
+2. **Obtenção do Identificador do Visitante**: O identificador único do visitante é obtido e armazenado na variável `visitorId`.
+3. **Criação dos Parâmetros do Corpo da Requisição**: Um objeto `bodyParams` é criado contendo `visitorId`, `accesskey`, `document` e `tipoDocument`.
+4. **Envio dos Dados para a Credify**: Utilizando Axios, os dados são enviados para o endpoint da Credify.
 
-To learn more about Next.js, take a look at the following resources:
+## Contato
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Se você tiver alguma dúvida ou precisar de mais informações, entre em contato com a equipe da Credify.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Este README fornece uma visão geral de como implementar e utilizar o serviço de Device Fingerprint da Credify em sua aplicação Next.js. Certifique-se de substituir os valores de exemplo pelos seus próprios dados antes de utilizar o código em produção.
